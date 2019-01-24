@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-LPCWSTR getLPCWSTRFromCharStar(const char* c)
+inline LPCWSTR getLPCWSTRFromCharStar(const char* c)
 {
 	//	wchar_t* wtext = new wchar_t[20];
 	//	//mbstowcs(wtext, name, strlen(name) + 1);//Plus null

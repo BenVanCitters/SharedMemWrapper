@@ -130,7 +130,6 @@ private:
 
     char		*myShortName;
     char		*myName;
-	wchar_t*		myName2;
     char		 myNamePostFix[UT_SHM_MAX_POST_FIX_SIZE];
     unsigned int mySize;
     void		*myMemory;

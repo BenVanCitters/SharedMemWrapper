@@ -20,6 +20,7 @@
 #include <time.h>
 #include "UT_SharedMem.h"
 #include <windows.h>
+#include "util.h"
 
 bool
 UT_SharedMem::open(const char *name,  unsigned int size, bool supportInfo)
@@ -224,7 +225,7 @@ UT_SharedMem::createSharedMem()
 		    						  PAGE_READWRITE,
 								  0,
 								  mySize,
-		myName2);
+		getLPCWSTRFromCharStar(myName));
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
@@ -245,7 +246,7 @@ UT_SharedMem::openSharedMem()
     if (myMapping)
 		return true;
     createName();
-    myMapping = OpenFileMapping( FILE_MAP_ALL_ACCESS, FALSE, myName2);
+    myMapping = OpenFileMapping( FILE_MAP_ALL_ACCESS, FALSE, getLPCWSTRFromCharStar(myName));
 
 
     if (!myMapping)

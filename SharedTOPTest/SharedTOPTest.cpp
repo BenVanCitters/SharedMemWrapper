@@ -11,7 +11,21 @@ int main()
     std::cout << "Hello World!\n"; 
 	while (true)
 	{
-	
+		if(shm->lock());
+		{
+			//Now get the pointer of the memory
+
+			void *data = shm->getMemory();
+			char* tmp = (char*)data;
+			//Once you have this pointer, what you do with it depends on the type of OP you are communicating with.Finally, unlock once done read / writing the data.
+			for (int i = 0; i < 2000; i++)
+			{
+				printf("%d,", tmp[i]);
+			}
+			printf("\n");
+			//
+		}
+		shm->unlock();
 	}
 
 }
