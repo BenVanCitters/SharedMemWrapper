@@ -12,15 +12,14 @@
  * Filename: UT_SharedMem.C
  */
 
-#ifdef WIN32
-#else
-   #include <string.h>
-   #define _strdup(s) strdup(s) 
-#endif 
+
+#include <string.h>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
 #include "UT_SharedMem.h"
+#include <windows.h>
 
 bool
 UT_SharedMem::open(const char *name,  unsigned int size, bool supportInfo)
@@ -38,9 +37,10 @@ UT_SharedMem::open(const char *name,  unsigned int size, bool supportInfo)
     int len = strlen(myShortName);
 
     createName();
-    char *m = new char[strlen(myName) + 5 + 1];
-    strcpy(m, myName);
-    strcat(m, "Mutex");
+	int mSize = strlen(myName) + 5 + 1;
+    char *m = new char[mSize];
+	strcpy_s(m, mSize, (const char*)myName);
+	strcat_s(m, mSize, "Mutex");
     myMutex = new UT_Mutex(m);
     delete m;
 
@@ -201,12 +201,16 @@ UT_SharedMem::randomizePostFix()
 void
 UT_SharedMem::createName()
 {
-    if (!myName)
-		myName = new char[strlen(myShortName) + 10 + UT_SHM_MAX_POST_FIX_SIZE];
+	int mySize = strlen(myShortName) + 10 + UT_SHM_MAX_POST_FIX_SIZE;
+	if (!myName)
+	{
+		myName = new char[mySize];
+	}
 
-    strcpy(myName, "TouchSHM");
-    strcat(myName, myShortName);
-    strcat(myName, myNamePostFix);
+	int tmpszof = sizeof myName;
+	strcpy_s(myName, mySize, "TouchSHM");
+	strcat_s(myName, mySize, myShortName);
+	strcat_s(myName, mySize, myNamePostFix);
 }
 
 bool
@@ -215,22 +219,19 @@ UT_SharedMem::createSharedMem()
     if (myMapping)
 		return true;
 
-#ifdef WIN32 
     myMapping = CreateFileMapping(INVALID_HANDLE_VALUE, 
 		    						  NULL,
 		    						  PAGE_READWRITE,
 								  0,
 								  mySize,
-								  myName);
+		myName2);
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
 		detach();
 		return false;
     }
-#else
-    assert(false);
-#endif 
+
 
     if (myMapping)
 		return true;
@@ -244,11 +245,8 @@ UT_SharedMem::openSharedMem()
     if (myMapping)
 		return true;
     createName();
-#ifdef WIN32 
-    myMapping = OpenFileMapping( FILE_MAP_ALL_ACCESS, FALSE, myName);
-#else
-    assert(false);
-#endif 
+    myMapping = OpenFileMapping( FILE_MAP_ALL_ACCESS, FALSE, myName2);
+
 
     if (!myMapping)
 		return false;
@@ -262,20 +260,14 @@ UT_SharedMem::detachInternal()
 {
     if (myMemory)
     {
-#ifdef WIN32 
 		UnmapViewOfFile(myMemory);
-#else
-        assert(false);
-#endif 
+
 		myMemory = 0;
     }
     if (myMapping)
     {
-#ifdef WIN32 
 		CloseHandle(myMapping);
-#else
-        assert(false);
-#endif 
+
 		myMapping = 0;
     }
 
@@ -283,11 +275,8 @@ UT_SharedMem::detachInternal()
     // Try to open the file again, if it works then someone else is still holding onto the file
     if (openSharedMem())
     {
-#ifdef WIN32
 		CloseHandle(myMapping);
-#else
-        assert(false);
-#endif 
+
 		myMapping = 0;
 		return false;
     }
@@ -330,9 +319,12 @@ UT_SharedMem::createInfo()
 	}
 
 	srand(time(NULL));
-	char *infoName = new char[strlen(myName) + strlen(UT_SHM_INFO_DECORATION) + 1];
-	strcpy(infoName, myName);
-	strcat(infoName, UT_SHM_INFO_DECORATION);
+	int nameLen = strlen(myName) + strlen(UT_SHM_INFO_DECORATION) + 1;
+	char *infoName = new char[nameLen];
+	//strcpy(infoName, myName);
+	strcpy_s(infoName, nameLen, myName);
+	//strcat(infoName, UT_SHM_INFO_DECORATION);
+	strcat_s(infoName, nameLen, UT_SHM_INFO_DECORATION);
 	mySharedMemInfo = new UT_SharedMem(infoName, 
 									   myAmOwner ? sizeof(UT_SharedMemInfo) : 0, false);
 	delete infoName;
@@ -399,12 +391,8 @@ UT_SharedMem::getMemory()
     {
 		if ((myAmOwner && createSharedMem()) || (!myAmOwner && openSharedMem()))
 		{
-#ifdef WIN32 
 		    myMemory = MapViewOfFile(myMapping, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-#else
-		    assert(false);
-		    myMemory = NULL;
-#endif 
+
 		    if (!myMemory)
 				myErrorState = UT_SHM_ERR_UNABLE_TO_MAP;
 		}

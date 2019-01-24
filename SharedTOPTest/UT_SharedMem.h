@@ -19,11 +19,8 @@
 #define __UT_SharedMem__
 
 //#include "UT_Defines.h"
-#ifdef WIN32
-    typedef HANDLE shmId;
-#else
-    typedef int shmId;
-#endif
+    //typedef HANDLE shmId;
+
 
 #define UT_SHM_INFO_MAGIC_NUMBER 0x56ed34ba
 
@@ -133,11 +130,12 @@ private:
 
     char		*myShortName;
     char		*myName;
+	wchar_t*		myName2;
     char		 myNamePostFix[UT_SHM_MAX_POST_FIX_SIZE];
     unsigned int mySize;
     void		*myMemory;
 
-    shmId		 	myMapping;
+	void*		 	myMapping;
     UT_Mutex		*myMutex;
     UT_SharedMem	*mySharedMemInfo;
     UT_SharedMemError	myErrorState;
