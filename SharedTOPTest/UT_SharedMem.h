@@ -18,13 +18,24 @@
 #ifndef __UT_SharedMem__
 #define __UT_SharedMem__
 
-//#include "UT_Defines.h"
-    //typedef HANDLE shmId;
+#include <string>
 
+#ifdef WIN32
+	#include <winsock2.h>
+	
+    typedef HANDLE ShmId;
+	typedef std::wstring ShmString;
+	typedef WCHAR ShmChar;
+	#define UT_SHM_INFO_DECORATION L"4jhd783h"
+#else
+    typedef int ShmId;
+	typedef std::string ShmString;
+	typedef char ShmChar;
+	#define UT_SHM_INFO_DECORATION "4jhd783h"
+#endif
 
 #define UT_SHM_INFO_MAGIC_NUMBER 0x56ed34ba
 
-#define UT_SHM_INFO_DECORATION "4jhd783h"
 
 #define UT_SHM_MAX_POST_FIX_SIZE 32
 
@@ -46,7 +57,7 @@ public:
     int magicNumber;
     int version;
     bool supported;
-    char namePostFix[UT_SHM_MAX_POST_FIX_SIZE];
+    ShmChar namePostFix[UT_SHM_MAX_POST_FIX_SIZE];
 
 	// version 2
 	bool	detach;
@@ -65,27 +76,29 @@ class UT_DLLEXP UT_SharedMem
 public:
 
 	// Use this if you are the SENDER
-    // size is in bytes
-     UT_SharedMem(const char *name, unsigned int size);
+	// size is in bytes
+	UT_SharedMem(const ShmString &name, unsigned int size);
 
 	// Use this one if tyou are the RECEIVER, you won't know the size of the
 	// memory segment
-	UT_SharedMem(const char *name);
+	UT_SharedMem(const ShmString &name);
 
 
-    ~UT_SharedMem();
+	~UT_SharedMem();
 
-    // Get the size of the shared memory, only the SENDER will know the size
-    // the RECEIVER will always get a value of 0
-    unsigned int getSize() const
-				{
-				    return mySize;
-				}
-    void		resize(unsigned int size);
+	// Get the size of the shared memory, only the SENDER will know the size
+	// the RECEIVER will always get a value of 0
+	unsigned int 
+	getSize() const
+	{
+		return mySize;
+	}
 
-    bool		lock();
-    bool		unlock();
-    
+	void		resize(unsigned int size);
+
+	bool		lock();
+	bool		unlock();
+
 
 	//
 	// detach will disassociate the shared memory segment from this process.
@@ -93,53 +106,55 @@ public:
 	// It returns false if the memory mapping is still around after detaching,
 	// this usually means someone else still has the mapping open.
 	//
-    bool		detach();
+	bool		detach();
 
 	//
 	//  getMemory will return a pointer to the shared memory segment.
 	//
-    void		*getMemory();
+	void*		getMemory();
 
-    char		*getName()
-				 {
-				     return myShortName;
-				 }
+	const ShmString&
+	getName()
+	{
+		return myShortName;
+	}
 
-    UT_SharedMemError getErrorState()
-				 {
-				     return myErrorState;
-				 }
+	UT_SharedMemError
+	getErrorState()
+	{
+		return myErrorState;
+	}
 				
 
 private:
 
 	// Internal constructor, not for external use
-    UT_SharedMem(const char *name, unsigned int size, bool supportInfo);
+	UT_SharedMem(const ShmString &name, unsigned int size, bool supportInfo);
 
-	bool		 open(const char* name, unsigned int size = 0, bool supportInfo = true);
+	bool		open(const ShmString &name, unsigned int size = 0, bool supportInfo = true);
 
-	bool		 detachInternal();
-    bool		 checkInfo();
-    void		 randomizePostFix();
-    void		 createName();
+	bool		detachInternal();
+	bool		checkInfo();
+	void		randomizePostFix();
+	void		createName();
 
-    bool		 createSharedMem();
-    bool		 openSharedMem();
+	bool		createSharedMem();
+	bool		openSharedMem();
 
-	bool		 createInfo();
+	bool		createInfo();
 
-    char		*myShortName;
-    char		*myName;
-    char		 myNamePostFix[UT_SHM_MAX_POST_FIX_SIZE];
-    unsigned int mySize;
-    void		*myMemory;
+	ShmString	myShortName;
+	ShmString	myName;
+	ShmChar		myNamePostFix[UT_SHM_MAX_POST_FIX_SIZE];
+	unsigned int mySize;
+	void*		myMemory;
 
-	void*		 	myMapping;
-    UT_Mutex		*myMutex;
-    UT_SharedMem	*mySharedMemInfo;
-    UT_SharedMemError	myErrorState;
+	ShmId		 	myMapping;
+	UT_Mutex*		myMutex;
+	UT_SharedMem*	mySharedMemInfo;
+	UT_SharedMemError	myErrorState;
 
-    bool				myAmOwner;
+	bool				myAmOwner;
 	bool				mySupportInfo;
 
 };

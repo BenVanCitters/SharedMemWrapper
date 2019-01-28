@@ -13,27 +13,27 @@
  */
 
 #include <assert.h>
-#include <windows.h>
-//#include <stdio.h>
+
 #include "UT_Mutex.h"
-#include "util.h"
 
 // We don't include the leakwatch here
 // since this file is used by users
 
-UT_Mutex::UT_Mutex(const char *name)
+UT_Mutex::UT_Mutex(const MtxString &name)
 {
-	wchar_t* n2 = (wchar_t*)getLPCWSTRFromCharStar(name);
-	myMutex = CreateMutex(NULL, false, n2);
-	DWORD lastError = GetLastError();
-//	delete[] n2;
+#ifdef WIN32
+    myMutex = CreateMutexW(NULL, FALSE, name.data());
+#else
+    assert(false);
+#endif
+
 }
 
 
 UT_Mutex::~UT_Mutex()
 {
 #ifdef WIN32
-    bool result = CloseHandle(myMutex);
+    CloseHandle(myMutex);
 #else
 #endif 
 }

@@ -21,13 +21,17 @@
 #ifdef WIN32
 #include <windows.h>
 #else
-//#include <libkern/OSAtomic.h>
+#include <libkern/OSAtomic.h>
 #endif
+
+#include <string>
 
 #ifdef WIN32
     typedef HANDLE mutexId;
+	typedef std::wstring MtxString;
 #else
     typedef int mutexId;
+	typedef std::string MtxString;
 #endif
 
 
@@ -39,7 +43,7 @@
 class UT_DLLEXP UT_Mutex
 {
 public:
-     UT_Mutex(const char *name);
+     UT_Mutex(const MtxString &name);
      ~UT_Mutex();
 
      bool       lock(int timeout);
