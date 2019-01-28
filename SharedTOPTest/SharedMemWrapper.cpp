@@ -11,6 +11,7 @@ SharedMemWrapper::SharedMemWrapper()
 	UT_SharedMem *shm = new UT_SharedMem("mymemoryname");
 	while (true)
 	{
+
 		bool lock_success = shm->lock();
 		if (lock_success)
 		{			
@@ -27,53 +28,44 @@ SharedMemWrapper::SharedMemWrapper()
 
 void SharedMemWrapper::printDataType(TOP_SharedMemHeader* tmp)
 {
+	printf("dataType: ");
 	int typ = tmp->dataType;
 	switch (typ)
 	{
-	case GL_UNSIGNED_BYTE:
-		printf("GL_UNSIGNED_BYTE\n"); break;
-	case GL_UNSIGNED_SHORT:
-		printf("GL_UNSIGNED_SHORT\n"); break;
-	case GL_FLOAT:
-		printf("GL_FLOAT\n"); break;
-	case GL_HALF_FLOAT_ARB:
-		printf("GL_HALF_FLOAT_ARB\n"); break;
+	case GL_UNSIGNED_BYTE: printf("GL_UNSIGNED_BYTE\n"); break;
+	case GL_UNSIGNED_SHORT: printf("GL_UNSIGNED_SHORT\n"); break;
+	case GL_FLOAT: printf("GL_FLOAT\n"); break;
+	case GL_HALF_FLOAT_ARB: printf("GL_HALF_FLOAT_ARB\n"); break;
 	default:
+		printf("Unknown: %#x - %d\n", tmp->dataType, tmp->dataType);
 		break;
 	}
 
 }
 void SharedMemWrapper::printDataFormat(TOP_SharedMemHeader* tmp)
 {
+	printf("dataformat: ");
 	switch (tmp->dataFormat)
 	{
-	case GL_RED:
-		printf("GL_RED\n"); break;
-	case GL_RG:
-		printf("GL_RG\n"); break;
-	case GL_RGB:
-		printf("GL_RGB\n"); break;
-	case GL_RGBA:
-		printf("GL_RGBA\n"); break;
-	case GL_LUMINANCE_ALPHA:
-		printf("GL_LUMINANCE_ALPHA\n"); break;
-	case GL_ALPHA:
-		printf("GL_ALPHA\n"); break;
-	case GL_LUMINANCE:
-		printf("GL_LUMINANCE\n"); break;
-	case GL_BGR_EXT:
-		printf("GL_BGR_EXT\n"); break;
-	case GL_BGRA_EXT:
-		printf("GL_BGRA_EXT\n"); break;
-	case GL_ABGR_EXT:
-		printf("GL_ABGR_EXT\n"); break;
+	case GL_RED: printf("GL_RED\n"); break;
+	case GL_RG: printf("GL_RG\n"); break;
+	case GL_RGB: printf("GL_RGB\n"); break;
+	case GL_RGBA: printf("GL_RGBA\n"); break;
+	case GL_LUMINANCE_ALPHA: printf("GL_LUMINANCE_ALPHA\n"); break;
+	case GL_ALPHA: printf("GL_ALPHA\n"); break;
+	case GL_LUMINANCE: printf("GL_LUMINANCE\n"); break;
+	case GL_BGR_EXT: printf("GL_BGR_EXT\n"); break;
+	case GL_BGRA_EXT: printf("GL_BGRA_EXT\n"); break;
+	case GL_ABGR_EXT: printf("GL_ABGR_EXT\n"); break;
 	default:
+		printf("Unknown: %#x - %d\n", tmp->dataFormat, tmp->dataFormat);
 		break;
 	}
 }
 
 void SharedMemWrapper::printPixelFormat(TOP_SharedMemHeader* tmp)
 {
+	printf("pixelFormat: ");
 	switch (tmp->pixelFormat)
 	{
 	case GL_RGBA8: printf("GL_RGBA8\n"); break;
@@ -96,6 +88,7 @@ void SharedMemWrapper::printPixelFormat(TOP_SharedMemHeader* tmp)
 	case GL_RG16F: printf("GL_RG16F\n"); break;
 	case GL_RG32F: printf("GL_RG32F\n"); break;
 	default:
+		printf("Unknown: %#x - %d\n", tmp->pixelFormat, tmp->pixelFormat);
 		break;
 	}
 }
@@ -106,7 +99,9 @@ void SharedMemWrapper::printData(TOP_SharedMemHeader* tmp)
 	unsigned char* t = (unsigned char*)tmp->getImage();
 	for (int i = 0; i < total_pixels; i++)
 	{
-		printf("%03.0d,", t[i]);
+		//printf("%03.0d,", t[i]);
+		printf("%#x,", t[i]);
+
 		
 	}
 	printf("\n");

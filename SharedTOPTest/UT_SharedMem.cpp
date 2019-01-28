@@ -102,8 +102,8 @@ UT_SharedMem::~UT_SharedMem()
     detach();
     delete myShortName;
     delete myName;
+	delete myMutex;
     delete mySharedMemInfo;
-    delete myMutex;
 }
 
 bool
@@ -267,7 +267,7 @@ UT_SharedMem::detachInternal()
     }
     if (myMapping)
     {
-		CloseHandle(myMapping);
+		bool result = CloseHandle(myMapping);
 
 		myMapping = 0;
     }

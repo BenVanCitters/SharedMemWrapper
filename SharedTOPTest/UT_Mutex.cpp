@@ -23,16 +23,17 @@
 
 UT_Mutex::UT_Mutex(const char *name)
 {
-	LPCWSTR n2 = getLPCWSTRFromCharStar(name);
+	wchar_t* n2 = (wchar_t*)getLPCWSTRFromCharStar(name);
 	myMutex = CreateMutex(NULL, false, n2);
-//	delete n2;
+	DWORD lastError = GetLastError();
+//	delete[] n2;
 }
 
 
 UT_Mutex::~UT_Mutex()
 {
 #ifdef WIN32
-    CloseHandle(myMutex);
+    bool result = CloseHandle(myMutex);
 #else
 #endif 
 }

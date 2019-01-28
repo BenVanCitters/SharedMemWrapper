@@ -12,11 +12,14 @@ inline LPCWSTR getLPCWSTRFromCharStar(const char* c)
 	//	LPWSTR ptr = wtext;
 	//	delete wtext;
 
-	int strLength = strlen(c);
+	int strLength = strlen(c)+1;
+	size_t numCharsConverted;
 	wchar_t* wtext = new wchar_t[strLength];
+
+	//delete[] wtext;
 	//mbstowcs(wtext, c, strLength + 1);//Plus null
-	size_t x = 0;
-	mbstowcs_s(&x, wtext, strLength+1, c, 99999);
+	
+	mbstowcs_s(&numCharsConverted, wtext, strLength+1, c, 99999);
 	LPWSTR ptr = wtext;
 	return ptr;
 }
