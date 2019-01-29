@@ -1,5 +1,5 @@
 /* Shared Use License: This file is owned by Derivative Inc. (Derivative) and
- * can only be used, and/or modified for use, in conjunction with 
+ * can only be used, and/or modified for use, in conjunction with
  * Derivative's TouchDesigner software, and only if you are a licensee who has
  * accepted Derivative's TouchDesigner license or assignment agreement (which
  * also govern the use of this file).  You may share a modified version of this
@@ -8,23 +8,23 @@
  * modification, is permitted.
  */
 
-/*
- * Filename: UT_Mutex.C
- */
+ /*
+  * Filename: UT_Mutex.C
+  */
 
 #include <assert.h>
 
 #include "UT_Mutex.h"
 
-// We don't include the leakwatch here
-// since this file is used by users
+  // We don't include the leakwatch here
+  // since this file is used by users
 
 UT_Mutex::UT_Mutex(const MtxString &name)
 {
 #ifdef WIN32
-    myMutex = CreateMutexW(NULL, FALSE, name.data());
+	myMutex = CreateMutexW(NULL, FALSE, name.data());
 #else
-    assert(false);
+	assert(false);
 #endif
 
 }
@@ -33,7 +33,7 @@ UT_Mutex::UT_Mutex(const MtxString &name)
 UT_Mutex::~UT_Mutex()
 {
 #ifdef WIN32
-    CloseHandle(myMutex);
+	CloseHandle(myMutex);
 #else
 #endif 
 }
@@ -42,13 +42,13 @@ bool
 UT_Mutex::lock(int timeout)
 {
 #ifdef WIN32
-    DWORD result = WaitForSingleObject(myMutex, timeout);
-    if (result != WAIT_OBJECT_0)
-        return false;
-    else
-        return true;
+	DWORD result = WaitForSingleObject(myMutex, timeout);
+	if (result != WAIT_OBJECT_0)
+		return false;
+	else
+		return true;
 #else
-    return false;
+	return false;
 #endif 
 }
 
@@ -56,8 +56,8 @@ bool
 UT_Mutex::unlock()
 {
 #ifdef WIN32
-    return ReleaseMutex(myMutex);
+	return ReleaseMutex(myMutex);
 #else
-    return false;
+	return false;
 #endif 
 }

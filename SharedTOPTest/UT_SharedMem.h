@@ -1,5 +1,5 @@
 /* Shared Use License: This file is owned by Derivative Inc. (Derivative) and
- * can only be used, and/or modified for use, in conjunction with 
+ * can only be used, and/or modified for use, in conjunction with
  * Derivative's TouchDesigner software, and only if you are a licensee who has
  * accepted Derivative's TouchDesigner license or assignment agreement (which
  * also govern the use of this file).  You may share a modified version of this
@@ -8,12 +8,12 @@
  * modification, is permitted.
  */
 
-/*
- * COMMENTS:
- *		Refer to the wiki article on Using Shared Memory in TouchDesigner
- *		for info on this class.
- *
- */
+ /*
+  * COMMENTS:
+  *		Refer to the wiki article on Using Shared Memory in TouchDesigner
+  *		for info on this class.
+  *
+  */
 
 #ifndef __UT_SharedMem__
 #define __UT_SharedMem__
@@ -21,17 +21,17 @@
 #include <string>
 
 #ifdef WIN32
-	#include <winsock2.h>
-	
-    typedef HANDLE ShmId;
-	typedef std::wstring ShmString;
-	typedef WCHAR ShmChar;
-	#define UT_SHM_INFO_DECORATION L"4jhd783h"
+#include <winsock2.h>
+
+typedef HANDLE ShmId;
+typedef std::wstring ShmString;
+typedef WCHAR ShmChar;
+#define UT_SHM_INFO_DECORATION L"4jhd783h"
 #else
-    typedef int ShmId;
-	typedef std::string ShmString;
-	typedef char ShmChar;
-	#define UT_SHM_INFO_DECORATION "4jhd783h"
+typedef int ShmId;
+typedef std::string ShmString;
+typedef char ShmChar;
+#define UT_SHM_INFO_DECORATION "4jhd783h"
 #endif
 
 #define UT_SHM_INFO_MAGIC_NUMBER 0x56ed34ba
@@ -41,12 +41,12 @@
 
 typedef enum
 {
-    UT_SHM_ERR_NONE = 0,
-    UT_SHM_ERR_ALREADY_EXIST,
-    UT_SHM_ERR_DOESNT_EXIST,
-    UT_SHM_ERR_INFO_ALREADY_EXIST,
-    UT_SHM_ERR_INFO_DOESNT_EXIST,
-    UT_SHM_ERR_UNABLE_TO_MAP,
+	UT_SHM_ERR_NONE = 0,
+	UT_SHM_ERR_ALREADY_EXIST,
+	UT_SHM_ERR_DOESNT_EXIST,
+	UT_SHM_ERR_INFO_ALREADY_EXIST,
+	UT_SHM_ERR_INFO_DOESNT_EXIST,
+	UT_SHM_ERR_UNABLE_TO_MAP,
 } UT_SharedMemError;
 
 // This is an internal class used by UT_SharedMem to handle
@@ -54,10 +54,10 @@ typedef enum
 class UT_SharedMemInfo
 {
 public:
-    int magicNumber;
-    int version;
-    bool supported;
-    ShmChar namePostFix[UT_SHM_MAX_POST_FIX_SIZE];
+	int magicNumber;
+	int version;
+	bool supported;
+	ShmChar namePostFix[UT_SHM_MAX_POST_FIX_SIZE];
 
 	// version 2
 	bool	detach;
@@ -88,8 +88,8 @@ public:
 
 	// Get the size of the shared memory, only the SENDER will know the size
 	// the RECEIVER will always get a value of 0
-	unsigned int 
-	getSize() const
+	unsigned int
+		getSize() const
 	{
 		return mySize;
 	}
@@ -114,17 +114,17 @@ public:
 	void*		getMemory();
 
 	const ShmString&
-	getName()
+		getName()
 	{
 		return myShortName;
 	}
 
 	UT_SharedMemError
-	getErrorState()
+		getErrorState()
 	{
 		return myErrorState;
 	}
-				
+
 
 private:
 

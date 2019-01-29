@@ -8,13 +8,13 @@
 SharedMemWrapper::SharedMemWrapper()
 {
 	std::cout << "Hello World!\n";
-	UT_SharedMem *shm = new UT_SharedMem("mymemoryname");
+	UT_SharedMem *shm = new UT_SharedMem(L"mymemoryname");
 	while (true)
 	{
 
 		bool lock_success = shm->lock();
 		if (lock_success)
-		{			
+		{
 			TOP_SharedMemHeader* tmp = (TOP_SharedMemHeader*)shm->getMemory();
 			printPixelFormat(tmp);
 			printDataFormat(tmp);
@@ -73,7 +73,7 @@ void SharedMemWrapper::printPixelFormat(TOP_SharedMemHeader* tmp)
 	case GL_ALPHA16: printf("GL_ALPHA16\n"); break;
 	case GL_RGB10_A2: printf("GL_RGB10_A2\n"); break;
 	case GL_RGBA16: printf("GL_RGBA16\n"); break;
-	case GL_RGBA16F_ARB : printf("GL_RGBA16F_ARB\n"); break;
+	case GL_RGBA16F_ARB: printf("GL_RGBA16F_ARB\n"); break;
 	case GL_RGBA32F_ARB: printf("GL_RGBA32F_ARB\n"); break;
 	case GL_ALPHA16F_ARB: printf("GL_ALPHA16F_ARB\n"); break;
 	case GL_ALPHA32F_ARB: printf("GL_ALPHA32F_ARB\n"); break;
@@ -95,14 +95,14 @@ void SharedMemWrapper::printPixelFormat(TOP_SharedMemHeader* tmp)
 
 void SharedMemWrapper::printData(TOP_SharedMemHeader* tmp)
 {
-	int total_pixels = tmp->width * tmp->height*4;
+	int total_pixels = tmp->width * tmp->height * 4;
 	unsigned char* t = (unsigned char*)tmp->getImage();
 	for (int i = 0; i < total_pixels; i++)
 	{
 		//printf("%03.0d,", t[i]);
 		printf("%#x,", t[i]);
 
-		
+
 	}
 	printf("\n");
 }
