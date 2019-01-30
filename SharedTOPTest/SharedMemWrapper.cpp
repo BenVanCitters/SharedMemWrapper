@@ -7,23 +7,74 @@
 
 SharedMemWrapper::SharedMemWrapper()
 {
-	std::cout << "Hello World!\n";
-	UT_SharedMem *shm = new UT_SharedMem(L"mymemoryname");
-	while (true)
+	bool trying_to_get_shared_tex = true;
+	while (trying_to_get_shared_tex)
 	{
+		std::cout << "Creating a UT_SharedMem!\n";
 
-		bool lock_success = shm->lock();
-		if (lock_success)
+		bool looping = true;
+		UT_SharedMem* shm = new UT_SharedMem(L"TOPShm");
+
+		if(hadError(shm))
+		{ looping = false; }
+
+		while (looping)
 		{
-			TOP_SharedMemHeader* tmp = (TOP_SharedMemHeader*)shm->getMemory();
-			printPixelFormat(tmp);
-			printDataFormat(tmp);
-			printDataType(tmp);
-			printData(tmp);
+			bool lock_success = shm->lock();
+
+			if (lock_success)
+			{
+				TOP_SharedMemHeader* tmp = (TOP_SharedMemHeader*)shm->getMemory();
+				if (!hadError(shm))
+				{
+					printPixelFormat(tmp);
+					printDataFormat(tmp);
+					printDataType(tmp);
+					printData(tmp);
+				}
+				else
+				{					
+					looping = false;
+				}
+			}
+			else
+			{
+				looping = false;
+				printf("There was a problem getting a lock...\n");
+			}
+			shm->unlock();
 		}
-		shm->unlock();
+		delete shm;
 	}
-	delete shm;
+}
+
+//returns true iff there was an error state in the ut shared mem object
+bool SharedMemWrapper::hadError(UT_SharedMem* shm)
+{
+	UT_SharedMemError err = shm->getErrorState();
+	bool hadErr = (err != UT_SHM_ERR_NONE);
+	if (hadErr)
+	{
+		printError(err);
+		std::cout << "bad news ahead!!" << std::endl;
+	}
+	return hadErr;
+}
+
+void SharedMemWrapper::printError(UT_SharedMemError err) 
+{
+	switch (err)
+	{
+		case UT_SHM_ERR_NONE: std::cout << "err: UT_SHM_ERR_NONE" << std::endl;  break;
+		case UT_SHM_ERR_ALREADY_EXIST: std::cout << "err: UT_SHM_ERR_ALREADY_EXIST" << std::endl;  break;
+		case UT_SHM_ERR_DOESNT_EXIST: std::cout << "err: UT_SHM_ERR_DOESNT_EXIST" << std::endl;  break;
+		case UT_SHM_ERR_INFO_ALREADY_EXIST: std::cout << "err: UT_SHM_ERR_INFO_ALREADY_EXIST" << std::endl;  break;
+		case UT_SHM_ERR_INFO_DOESNT_EXIST: std::cout << "err: UT_SHM_ERR_INFO_DOESNT_EXIST" << std::endl;  break;
+		case UT_SHM_ERR_UNABLE_TO_MAP: std::cout << "err: UT_SHM_ERR_UNABLE_TO_MAP" << std::endl;  break;
+		default:
+			printf("Unknown err: %#x\n", err);		
+			break;
+	}
 }
 
 void SharedMemWrapper::printDataType(TOP_SharedMemHeader* tmp)
