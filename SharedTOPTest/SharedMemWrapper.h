@@ -14,6 +14,8 @@ private:
 	void printError(UT_SharedMemError err);	
 	void printDataType(TOP_SharedMemHeader* tmp);
 	void printPixelFormat(TOP_SharedMemHeader* tmp);
+	int getChannelCount(TOP_SharedMemHeader * tmp);
+	int getBytesPerPixel(TOP_SharedMemHeader * tmp);
 	void printData(TOP_SharedMemHeader* tmp);
 	void printDataFormat(TOP_SharedMemHeader* tmp);
 	TOP_SharedMemHeader* memMask;

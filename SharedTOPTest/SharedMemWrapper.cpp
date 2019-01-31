@@ -4,7 +4,6 @@
 #include "UT_SharedMem.h"
 #include "TOP_SharedMemHeader.h"
 
-
 SharedMemWrapper::SharedMemWrapper()
 {
 	bool trying_to_get_shared_tex = true;
@@ -25,22 +24,27 @@ SharedMemWrapper::SharedMemWrapper()
 			if (lock_success)
 			{
 				TOP_SharedMemHeader* tmp = (TOP_SharedMemHeader*)shm->getMemory();
-				if (!hadError(shm))
+				if (tmp == NULL)
 				{
-					printPixelFormat(tmp);
-					printDataFormat(tmp);
-					printDataType(tmp);
-					printData(tmp);
-				}
-				else
-				{					
+					printf("getMem returned null - terminating loop.\n");
 					looping = false;
+					break;
 				}
+				if(hadError(shm))
+				{ 
+					looping = false;
+					break;
+				}
+				
+				printPixelFormat(tmp);
+				printDataFormat(tmp);
+				printDataType(tmp);
+				printData(tmp);
 			}
 			else
 			{
 				looping = false;
-				printf("There was a problem getting a lock...\n");
+				printf("There was a problem getting a lock on the shared memory block... try re-naming the shared mem out\n");
 			}
 			shm->unlock();
 		}
@@ -143,17 +147,81 @@ void SharedMemWrapper::printPixelFormat(TOP_SharedMemHeader* tmp)
 		break;
 	}
 }
+int SharedMemWrapper::getChannelCount(TOP_SharedMemHeader* tmp)
+{
+	int result = -1;
+	switch (tmp->pixelFormat)
+	{
+	case GL_RGBA8: result = 4; break;
+	case GL_ALPHA8: result = 1; break;
+	case GL_ALPHA16: result = 1; break;
+	case GL_RGB10_A2: result = 4; break;
+	case GL_RGBA16: result = 4; break;
+	case GL_RGBA16F_ARB: result = 4; break;
+	case GL_RGBA32F_ARB: 4; break;
+	case GL_ALPHA16F_ARB: result = 1; break;
+	case GL_ALPHA32F_ARB: result = 1; break;
+	case GL_RGB32F_ARB: 3; break;
+	case GL_R11F_G11F_B10F_EXT: result = 3; break;
+	case GL_R8: result = 1; break;
+	case GL_R16: result = 1; break;
+	case GL_R16F: result = 1; break;
+	case GL_R32F: result = 1; break;
+	case GL_RG8: result = 2; break;
+	case GL_RG16: result = 2; break;
+	case GL_RG16F: result = 2; break;
+	case GL_RG32F: result = 2; break;
+	default:
+		result = 4;
+		printf("Unknown: %#x - %d\n", tmp->pixelFormat, tmp->pixelFormat);
+		break;
+	}
+	return result;
+}
 
+int SharedMemWrapper::getBytesPerPixel(TOP_SharedMemHeader* tmp)
+{
+	int result = -1;
+	switch (tmp->pixelFormat)
+	{
+	case GL_RGBA8: result = 4; break;
+	case GL_ALPHA8: result = 1; break;
+	case GL_ALPHA16: result = 2; break;
+	case GL_RGB10_A2: result = 2; break;
+	case GL_RGBA16: result = 2; break;
+	case GL_RGBA16F_ARB: result = 8; break;
+	case GL_RGBA32F_ARB: 16; break;
+	case GL_ALPHA16F_ARB: result = 2; break;
+	case GL_ALPHA32F_ARB: result = 4; break;
+	case GL_RGB32F_ARB: 4; break;
+	case GL_R11F_G11F_B10F_EXT: result = 4; break;
+	case GL_R8: result = 1; break;
+	case GL_R16: result = 2; break;
+	case GL_R16F: result = 2; break;
+	case GL_R32F: result = 4; break;
+	case GL_RG8: result = 4; break;
+	case GL_RG16: result = 4; break;
+	case GL_RG16F: result = 4; break;
+	case GL_RG32F: result = 8; break;
+	default:
+		result = 16;
+		printf("Unknown: %#x - %d\n", tmp->pixelFormat, tmp->pixelFormat);
+		break;
+	}
+	return result;
+}
 void SharedMemWrapper::printData(TOP_SharedMemHeader* tmp)
 {
-	int total_pixels = tmp->width * tmp->height * 4;
+	int bytesPerPix = getBytesPerPixel(tmp);
+	int total_pixels = tmp->width * tmp->height *bytesPerPix *16 + 100;
 	unsigned char* t = (unsigned char*)tmp->getImage();
+	const char* s = "%#.2x,";
 	for (int i = 0; i < total_pixels; i++)
 	{
+		//std::cout << std::hex << std::setw(4) << t[i] << ", ";
 		//printf("%03.0d,", t[i]);
-		printf("%#x,", t[i]);
-
-
+		//printf("%#.2x,", t[i]);
+		printf(s, t[i]);
 	}
 	printf("\n");
 }
