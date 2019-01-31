@@ -6,50 +6,82 @@
 
 SharedMemWrapper::SharedMemWrapper()
 {
-	bool trying_to_get_shared_tex = true;
-	while (trying_to_get_shared_tex)
+	shm = NULL;
+}
+
+//init the loop - make a sharedmem with a name...
+bool SharedMemWrapper::initLoop(const char* SharedMemName)
+{
+	//make a wchar out of a normal char star
+	size_t returnValue; // The number of characters converted.
+	int strln = strlen(SharedMemName);
+	const size_t sizeInWords = strln; // The size of the wcstr buffer in words
+	//const char* c_name = "nanana"; // The address of a sequence of characters
+	wchar_t *wc_name = new wchar_t[strln]; // we make this on the heap - but we don't delete...
+
+	errno_t err = mbstowcs_s(&returnValue, wc_name, sizeInWords+1, SharedMemName, strln);
+
+	std::cout << "Creating a UT_SharedMem!\n";
+	shm = new UT_SharedMem(wc_name);
+	
+	//return false on error
+	return !hadError(shm);	
+}
+
+//returns false on failure
+bool SharedMemWrapper::processMem()
+{
+	if (shm == NULL)
 	{
-		std::cout << "Creating a UT_SharedMem!\n";
-
-		bool looping = true;
-		UT_SharedMem* shm = new UT_SharedMem(L"TOPShm");
-
-		if(hadError(shm))
-		{ looping = false; }
-
-		while (looping)
-		{
-			bool lock_success = shm->lock();
-
-			if (lock_success)
-			{
-				TOP_SharedMemHeader* tmp = (TOP_SharedMemHeader*)shm->getMemory();
-				if (tmp == NULL)
-				{
-					printf("getMem returned null - terminating loop.\n");
-					looping = false;
-					break;
-				}
-				if(hadError(shm))
-				{ 
-					looping = false;
-					break;
-				}
-				
-				printPixelFormat(tmp);
-				printDataFormat(tmp);
-				printDataType(tmp);
-				printData(tmp);
-			}
-			else
-			{
-				looping = false;
-				printf("There was a problem getting a lock on the shared memory block... try re-naming the shared mem out\n");
-			}
-			shm->unlock();
-		}
-		delete shm;
+		printf("shared mem isn't initialized - call initLoop first \n");
+		return false;
 	}
+	if (hadError(shm))
+	{
+		return false;
+	}
+	bool lock_success = shm->lock();
+
+	if (lock_success)
+	{
+		TOP_SharedMemHeader* tmp = (TOP_SharedMemHeader*)shm->getMemory();
+		//not sure what can cause this but it definitely happens a lot
+		if (tmp == NULL)
+		{
+			printf("getMem returned null - terminating loop.\n");					
+			shm->unlock();
+			return false;
+		}
+		//bail if there was an error - haderror will print the error
+		if(hadError(shm))
+		{ 
+			shm->unlock();
+			return false;
+		}
+		
+		//do stuff
+		printPixelFormat(tmp);
+		printDataFormat(tmp);
+		printDataType(tmp);
+		printData(tmp);
+	}
+	else
+	{
+		printf("There was a problem getting a lock on the shared memory block... try re-naming the shared mem out\n");
+		return false;
+	}
+	shm->unlock();
+	//if we made it this far awesome!
+	return true;
+}
+
+//cleans up the loop and returns the results of the unlock op
+bool SharedMemWrapper::terminateLoop()
+{
+	bool unlock_success = shm->unlock();
+	delete shm;
+	shm = NULL;
+	return unlock_success;
 }
 
 //returns true iff there was an error state in the ut shared mem object
@@ -95,7 +127,6 @@ void SharedMemWrapper::printDataType(TOP_SharedMemHeader* tmp)
 		printf("Unknown: %#x - %d\n", tmp->dataType, tmp->dataType);
 		break;
 	}
-
 }
 void SharedMemWrapper::printDataFormat(TOP_SharedMemHeader* tmp)
 {

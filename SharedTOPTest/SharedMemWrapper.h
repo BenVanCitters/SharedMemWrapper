@@ -9,6 +9,10 @@ public:
 	SharedMemWrapper();
 	~SharedMemWrapper();
 
+	bool initLoop(const char* SharedMemName);
+	bool processMem();
+	bool terminateLoop();
+
 private:
 	bool hadError(UT_SharedMem * shm);
 	void printError(UT_SharedMemError err);	
@@ -18,6 +22,6 @@ private:
 	int getBytesPerPixel(TOP_SharedMemHeader * tmp);
 	void printData(TOP_SharedMemHeader* tmp);
 	void printDataFormat(TOP_SharedMemHeader* tmp);
-	TOP_SharedMemHeader* memMask;
+	UT_SharedMem* shm;
 };
 
