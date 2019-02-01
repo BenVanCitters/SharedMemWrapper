@@ -21,43 +21,29 @@
 
 UT_Mutex::UT_Mutex(const MtxString &name)
 {
-#ifdef WIN32
 	myMutex = CreateMutexW(NULL, FALSE, name.data());
-#else
-	assert(false);
-#endif
+
 
 }
 
 
 UT_Mutex::~UT_Mutex()
 {
-#ifdef WIN32
 	CloseHandle(myMutex);
-#else
-#endif 
 }
 
 bool
 UT_Mutex::lock(int timeout)
 {
-#ifdef WIN32
 	DWORD result = WaitForSingleObject(myMutex, timeout);
 	if (result != WAIT_OBJECT_0)
 		return false;
 	else
 		return true;
-#else
-	return false;
-#endif 
 }
 
 bool
 UT_Mutex::unlock()
 {
-#ifdef WIN32
 	return ReleaseMutex(myMutex);
-#else
-	return false;
-#endif 
 }

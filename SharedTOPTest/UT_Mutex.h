@@ -18,21 +18,15 @@
 #define __UT_Mutex__
 
 
-#ifdef WIN32
+
 #include <windows.h>
-#else
-#include <libkern/OSAtomic.h>
-#endif
+
 
 #include <string>
 
-#ifdef WIN32
 typedef HANDLE mutexId;
 typedef std::wstring MtxString;
-#else
-typedef int mutexId;
-typedef std::string MtxString;
-#endif
+
 
 
 // Needed so people can compile this outside the TouchDesigner build environement

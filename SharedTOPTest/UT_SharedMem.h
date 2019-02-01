@@ -20,19 +20,13 @@
 
 #include <string>
 
-#ifdef WIN32
+
 #include <winsock2.h>
 
 typedef HANDLE ShmId;
 typedef std::wstring ShmString;
 typedef WCHAR ShmChar;
 #define UT_SHM_INFO_DECORATION L"4jhd783h"
-#else
-typedef int ShmId;
-typedef std::string ShmString;
-typedef char ShmChar;
-#define UT_SHM_INFO_DECORATION "4jhd783h"
-#endif
 
 #define UT_SHM_INFO_MAGIC_NUMBER 0x56ed34ba
 

@@ -12,11 +12,6 @@
   * Filename: UT_SharedMem.C
   */
 
-#ifdef WIN32
-#else
-#include <string.h>
-#define _strdup(s) strdup(s) 
-#endif 
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
@@ -39,11 +34,8 @@ UT_SharedMem::open(const ShmString &name, unsigned int size, bool supportInfo)
 
 	ShmString m;
 	m = myName;
-#ifdef WIN32
 	m += L"Mutex";
-#else
-	m += "Mutex";
-#endif
+
 
 	myMutex = new UT_Mutex(m);
 
@@ -202,11 +194,8 @@ UT_SharedMem::randomizePostFix()
 void
 UT_SharedMem::createName()
 {
-#ifdef WIN32
 	myName = L"TouchSHM";
-#else
-	myName = "TouchSHM";
-#endif
+
 
 	myName += myShortName;
 	myName += myNamePostFix;
@@ -218,7 +207,6 @@ UT_SharedMem::createSharedMem()
 	if (myMapping)
 		return true;
 
-#ifdef WIN32 
 	myMapping = CreateFileMappingW(INVALID_HANDLE_VALUE,
 		NULL,
 		PAGE_READWRITE,
@@ -231,9 +219,7 @@ UT_SharedMem::createSharedMem()
 		detach();
 		return false;
 	}
-#else
-	assert(false);
-#endif 
+
 
 	if (myMapping)
 		return true;
@@ -247,11 +233,8 @@ UT_SharedMem::openSharedMem()
 	if (myMapping)
 		return true;
 	createName();
-#ifdef WIN32 
 	myMapping = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, myName.data());
-#else
-	assert(false);
-#endif 
+
 
 	if (!myMapping)
 		return false;
@@ -265,20 +248,14 @@ UT_SharedMem::detachInternal()
 {
 	if (myMemory)
 	{
-#ifdef WIN32 
 		UnmapViewOfFile(myMemory);
-#else
-		assert(false);
-#endif 
+
 		myMemory = 0;
 	}
 	if (myMapping)
 	{
-#ifdef WIN32 
 		CloseHandle(myMapping);
-#else
-		assert(false);
-#endif 
+
 		myMapping = 0;
 	}
 
@@ -286,11 +263,8 @@ UT_SharedMem::detachInternal()
 	// Try to open the file again, if it works then someone else is still holding onto the file
 	if (openSharedMem())
 	{
-#ifdef WIN32
 		CloseHandle(myMapping);
-#else
-		assert(false);
-#endif 
+
 		myMapping = 0;
 		return false;
 	}
@@ -403,12 +377,8 @@ UT_SharedMem::getMemory()
 	{
 		if ((myAmOwner && createSharedMem()) || (!myAmOwner && openSharedMem()))
 		{
-#ifdef WIN32 
 			myMemory = MapViewOfFile(myMapping, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-#else
-			assert(false);
-			myMemory = NULL;
-#endif 
+
 			if (!myMemory)
 				myErrorState = UT_SHM_ERR_UNABLE_TO_MAP;
 		}
