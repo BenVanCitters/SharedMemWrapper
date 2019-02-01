@@ -12,6 +12,13 @@ SharedMemWrapper::SharedMemWrapper()
 //init the loop - make a sharedmem with a name...
 bool SharedMemWrapper::initLoop(const char* SharedMemName)
 {
+	if (shm)
+	{
+		shm->unlock(); //unlock?? fuck it!  might as well do this before deleting it forever!
+		shm->detach();
+		delete shm;
+		shm = NULL;
+	}
 	//make a wchar out of a normal char star
 	size_t returnValue; // The number of characters converted.
 	int strln = strlen(SharedMemName);
