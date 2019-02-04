@@ -139,6 +139,8 @@ private:
 
 	ShmString	myShortName;
 	ShmString	myName;
+
+	ShmString   tmpPNHolder;//object scope var used in checkinfo() as an optimization to avoid constant re-construction of this string object
 	ShmChar		myNamePostFix[UT_SHM_MAX_POST_FIX_SIZE];
 	unsigned int mySize;
 	void*		myMemory;

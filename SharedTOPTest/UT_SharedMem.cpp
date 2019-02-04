@@ -27,7 +27,6 @@ UT_SharedMem::open(const ShmString &name, unsigned int size, bool supportInfo)
 	memset(myNamePostFix, 0, sizeof(myNamePostFix));
 
 	myShortName = name;
-
 	mySupportInfo = supportInfo;
 
 	createName();
@@ -129,12 +128,12 @@ UT_SharedMem::checkInfo()
 			}
 		}
 
-		ShmString pn;
-		pn = info->namePostFix;
+		//using an object-scope variable to avoid constant re-construction
+		tmpPNHolder = info->namePostFix;
 
-		if (pn != myNamePostFix)
+		if (tmpPNHolder != myNamePostFix)
 		{
-			memcpy(myNamePostFix, pn.data(), UT_SHM_MAX_POST_FIX_SIZE * sizeof(ShmChar));
+			memcpy(myNamePostFix, tmpPNHolder.data(), UT_SHM_MAX_POST_FIX_SIZE * sizeof(ShmChar));
 			detachInternal();
 		}
 		mySharedMemInfo->unlock();

@@ -27,6 +27,9 @@
     <ClInclude Include="SharedMemWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SharedMemDelegate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="UT_Mutex.cpp">

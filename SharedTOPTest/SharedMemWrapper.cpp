@@ -3,13 +3,19 @@
 #include <iostream>
 #include "UT_SharedMem.h"
 #include "TOP_SharedMemHeader.h"
+#include <chrono>
 
-SharedMemWrapper::SharedMemWrapper()
-{
-	shm = NULL;
-}
+SharedMemWrapper::SharedMemWrapper() : SharedMemWrapper("no_name", NULL) {}
+
+SharedMemWrapper::SharedMemWrapper(const char* name, SharedMemDelegate* delgt) : myName(name), sharedMemDelegate(delgt)
+{}
 
 //init the loop - make a sharedmem with a name...
+
+bool SharedMemWrapper::initLoop()
+{
+	return initLoop(myName);
+}
 bool SharedMemWrapper::initLoop(const char* SharedMemName)
 {
 	if (shm)
@@ -22,22 +28,22 @@ bool SharedMemWrapper::initLoop(const char* SharedMemName)
 	//make a wchar out of a normal char star
 	size_t returnValue; // The number of characters converted.
 	int strln = strlen(SharedMemName);
-	const size_t sizeInWords = strln; // The size of the wcstr buffer in words
-	//const char* c_name = "nanana"; // The address of a sequence of characters
-	wchar_t *wc_name = new wchar_t[strln]; // we make this on the heap - but we don't delete...
-
-	errno_t err = mbstowcs_s(&returnValue, wc_name, sizeInWords+1, SharedMemName, strln);
+	const size_t sizeInWords = strln+1; // The size of the wcstr buffer in words
+	wchar_t *wc_name = new wchar_t[sizeInWords]; // we make this on the heap - but we don't delete...
+	
+	errno_t err = mbstowcs_s(&returnValue, wc_name, sizeInWords, SharedMemName, strln);
 
 	std::cout << "Creating a UT_SharedMem!\n";
 	shm = new UT_SharedMem(wc_name);
-	
+	delete[] wc_name;
 	//return false on error
-	return !hadError(shm);	
+	return !hadError(shm);
 }
 
 //returns false on failure
 bool SharedMemWrapper::processMem()
 {
+	auto start = std::chrono::high_resolution_clock::now();
 	if (shm == NULL)
 	{
 		printf("shared mem isn't initialized - call initLoop first \n");
@@ -55,22 +61,26 @@ bool SharedMemWrapper::processMem()
 		//not sure what can cause this but it definitely happens a lot
 		if (tmp == NULL)
 		{
-			printf("getMem returned null - terminating loop.\n");					
+			printf("getMem returned null - terminating loop.\n");
 			shm->unlock();
 			return false;
 		}
 		//bail if there was an error - haderror will print the error
-		if(hadError(shm))
-		{ 
+		if (hadError(shm))
+		{
 			shm->unlock();
 			return false;
 		}
-		
+		if (sharedMemDelegate != NULL)
+		{
+			int dataSize = tmp->width * tmp->height * getBytesPerPixel(tmp);
+			sharedMemDelegate->sharedMemDataCallback((unsigned char*)tmp->getImage(), dataSize, tmp->width, tmp->height);
+		}
 		//do stuff
-		printPixelFormat(tmp);
-		printDataFormat(tmp);
-		printDataType(tmp);
-		printData(tmp);
+		//printPixelFormat(tmp);
+		//printDataFormat(tmp);
+		//printDataType(tmp);
+		//printData(tmp);
 	}
 	else
 	{
@@ -78,6 +88,10 @@ bool SharedMemWrapper::processMem()
 		return false;
 	}
 	shm->unlock();
+	auto finish = std::chrono::high_resolution_clock::now();
+	long long nanos = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+	float millis = nanos / 1000000.f;
+	//std::cout << "frame processing took: " << millis << "ms                       \r";
 	//if we made it this far awesome!
 	return true;
 }
@@ -104,19 +118,19 @@ bool SharedMemWrapper::hadError(UT_SharedMem* shm)
 	return hadErr;
 }
 
-void SharedMemWrapper::printError(UT_SharedMemError err) 
+void SharedMemWrapper::printError(UT_SharedMemError err)
 {
 	switch (err)
 	{
-		case UT_SHM_ERR_NONE: std::cout << "err: UT_SHM_ERR_NONE" << std::endl;  break;
-		case UT_SHM_ERR_ALREADY_EXIST: std::cout << "err: UT_SHM_ERR_ALREADY_EXIST" << std::endl;  break;
-		case UT_SHM_ERR_DOESNT_EXIST: std::cout << "err: UT_SHM_ERR_DOESNT_EXIST" << std::endl;  break;
-		case UT_SHM_ERR_INFO_ALREADY_EXIST: std::cout << "err: UT_SHM_ERR_INFO_ALREADY_EXIST" << std::endl;  break;
-		case UT_SHM_ERR_INFO_DOESNT_EXIST: std::cout << "err: UT_SHM_ERR_INFO_DOESNT_EXIST" << std::endl;  break;
-		case UT_SHM_ERR_UNABLE_TO_MAP: std::cout << "err: UT_SHM_ERR_UNABLE_TO_MAP" << std::endl;  break;
-		default:
-			printf("Unknown err: %#x\n", err);		
-			break;
+	case UT_SHM_ERR_NONE: std::cout << "err: UT_SHM_ERR_NONE" << std::endl;  break;
+	case UT_SHM_ERR_ALREADY_EXIST: std::cout << "err: UT_SHM_ERR_ALREADY_EXIST" << std::endl;  break;
+	case UT_SHM_ERR_DOESNT_EXIST: std::cout << "err: UT_SHM_ERR_DOESNT_EXIST" << std::endl;  break;
+	case UT_SHM_ERR_INFO_ALREADY_EXIST: std::cout << "err: UT_SHM_ERR_INFO_ALREADY_EXIST" << std::endl;  break;
+	case UT_SHM_ERR_INFO_DOESNT_EXIST: std::cout << "err: UT_SHM_ERR_INFO_DOESNT_EXIST" << std::endl;  break;
+	case UT_SHM_ERR_UNABLE_TO_MAP: std::cout << "err: UT_SHM_ERR_UNABLE_TO_MAP" << std::endl;  break;
+	default:
+		printf("Unknown err: %#x\n", err);
+		break;
 	}
 }
 
@@ -251,7 +265,7 @@ int SharedMemWrapper::getBytesPerPixel(TOP_SharedMemHeader* tmp)
 void SharedMemWrapper::printData(TOP_SharedMemHeader* tmp)
 {
 	int bytesPerPix = getBytesPerPixel(tmp);
-	int total_pixels = tmp->width * tmp->height *bytesPerPix *16 + 100;
+	int total_pixels = tmp->width * tmp->height * bytesPerPix;
 	unsigned char* t = (unsigned char*)tmp->getImage();
 	const char* s = "%#.2x,";
 	for (int i = 0; i < total_pixels; i++)
@@ -264,18 +278,6 @@ void SharedMemWrapper::printData(TOP_SharedMemHeader* tmp)
 	printf("\n");
 }
 
-//void oldMeth(UT_SharedMem *shm)
-//{
-//
-//	void *data = shm->getMemory();
-//	unsigned char* tmp = (unsigned char*)data;
-//	//Once you have this pointer, what you do with it depends on the type of OP you are communicating with.Finally, unlock once done read / writing the data.
-//	for (int i = 0; i < 200; i++)
-//	{
-//		printf("%03.0d,", tmp[i]);
-//	}
-//	printf("\n");
-//}
 
 SharedMemWrapper::~SharedMemWrapper()
 {
