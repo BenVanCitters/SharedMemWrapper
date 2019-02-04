@@ -27,7 +27,7 @@ bool SharedMemWrapper::initLoop(const char* SharedMemName)
 	}
 	//make a wchar out of a normal char star
 	size_t returnValue; // The number of characters converted.
-	int strln = strlen(SharedMemName);
+	size_t strln = strlen(SharedMemName);
 	const size_t sizeInWords = strln+1; // The size of the wcstr buffer in words
 	wchar_t *wc_name = new wchar_t[sizeInWords]; // we make this on the heap - but we don't delete...
 	

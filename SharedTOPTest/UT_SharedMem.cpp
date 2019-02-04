@@ -305,7 +305,7 @@ UT_SharedMem::createInfo()
 		return mySharedMemInfo->getErrorState() == UT_SHM_ERR_NONE;
 	}
 
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 	ShmString infoName;
 	infoName += myName;
 	infoName += UT_SHM_INFO_DECORATION;
